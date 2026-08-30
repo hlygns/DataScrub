@@ -1,0 +1,21 @@
+﻿# .NET
+backend/**/bin/
+backend/**/obj/
+*.user
+
+# Python
+ml-service/venv/
+ml-service/__pycache__/
+ml-service/**/__pycache__/
+*.pyc
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+
+# Editor / OS
+.vs/
+.vscode/
+.DS_Store
+
+backend/DataScrub.API/Uploads/*
