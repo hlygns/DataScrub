@@ -1,78 +1,93 @@
-# DataScrub — Otonom Veri Temizleme Platformu
+# DataScrub — Autonomous Data Cleaning Platform
 
-MobileCRM'deki "firma eşleştirme, veri normalizasyonu, mükerrer kayıt kontrolü" deneyiminin
-genelleştirilmiş, bağımsız bir ürün haline getirilmiş hali.
+A full-stack tool that detects and fixes common data quality issues (duplicate records,
+missing values, inconsistent formats) in uploaded CSV/Excel files — with human-approved
+suggestions rather than blind automated changes.
 
-## Mimari
+Built as a generalized version of real-world data-matching problems I worked on during my
+internship (company matching, data normalization, duplicate record detection in a CRM app).
 
-```
-CSV/Excel dosyası
-      ↓
-ASP.NET Core Web API  (DataScrub.API)
-  ├── Domain            → Dataset, DetectedIssue entity'leri
-  ├── Application        → DatasetService (orkestrasyon), DTO'lar, interface'ler
-  └── Infrastructure     → EF Core (SQL Server), Python servisine HTTP client
-      ↓  (REST)
-Python ML Servisi (FastAPI)
-  ├── duplicate_detection.py   → fuzzy matching ile mükerrer kayıt tespiti
-  ├── missing_data.py          → grup bazlı akıllı eksik veri doldurma
-  └── format_fixing.py         → tarih/telefon/isim format standardizasyonu
-      ↓
-Sonuçlar DB'ye yazılır → React dashboard'da onay/red
-```
+## Architecture
+CSV/Excel upload
+↓
+React frontend (upload UI, issue review table, export button)
+↓ (REST)
+ASP.NET Core Web API — Clean Architecture
+├── Domain → Dataset, DetectedIssue entities
+├── Application → orchestration service, DTOs, interfaces
+└── Infrastructure → EF Core (SQL Server), HTTP client to the ML service
+↓ (REST)
+Python ML microservice (FastAPI)
+├── duplicate_detection.py → fuzzy matching (RapidFuzz) with blocking for performance
+├── missing_data.py → group-aware smart value suggestions
+├── format_fixing.py → date/phone/name standardization
+└── cleaning.py → applies only user-approved fixes to produce a clean file
 
-## Kurulum
+## Tech Stack
 
-### 1. Python ML Servisi
+- **Backend:** C#, ASP.NET Core Web API, Entity Framework Core, SQL Server
+- **ML Service:** Python, FastAPI, Pandas, RapidFuzz
+- **Frontend:** React (Vite), Axios
+- **Testing:** xUnit, Moq
+- **Architecture:** Clean Architecture (Domain / Application / Infrastructure / API), Dependency Injection, Repository Pattern
 
+## Why this design
+
+- **Microservice split:** C# and Python are independent, deployable services communicating
+  purely over REST. Python handles what it's best at (Pandas-based analysis); C# owns the
+  workflow, persistence, and API surface.
+- **Confidence-scored suggestions:** every detected issue carries a 0.0–1.0 confidence
+  score, and nothing is changed in the actual data until a user explicitly approves it.
+- **N+1-safe queries:** repository methods use EF Core's `.Include()` where related data is
+  needed, avoiding the N+1 query problem.
+
+## Running Locally
+
+### 1. ML Service (Python)
 ```bash
 cd ml-service
-python3 -m venv venv
+python -m venv venv
 source venv/bin/activate       # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-python3 main.py                 # http://localhost:8000 üzerinde açılır
+python main.py
 ```
+→ http://localhost:8000/docs
 
-Test etmek için: `http://localhost:8000/docs` adresinde Swagger UI otomatik açılır.
-
-### 2. ASP.NET Core Backend
-
-Gereksinim: [.NET 8 SDK](https://dotnet.microsoft.com/download) ve SQL Server (LocalDB yeterli).
-
+### 2. Backend (ASP.NET Core)
+Requires [.NET SDK](https://dotnet.microsoft.com/download) and SQL Server (LocalDB works).
 ```bash
 cd backend
 dotnet restore
-dotnet ef migrations add InitialCreate --project DataScrub.Infrastructure --startup-project DataScrub.API
 dotnet ef database update --project DataScrub.Infrastructure --startup-project DataScrub.API
-dotnet run --project DataScrub.API      # http://localhost:5xxx üzerinde açılır
+dotnet run --project DataScrub.API
+```
+→ http://localhost:5000/swagger
+
+### 3. Frontend (React)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+→ http://localhost:5173
+
+### 4. Run tests
+```bash
+cd backend
+dotnet test
 ```
 
-> `dotnet ef` komutları için önce şu paketi kurman gerekebilir:
-> `dotnet tool install --global dotnet-ef`
+## Usage Flow
 
-Swagger arayüzü: `https://localhost:<port>/swagger`
+1. Upload a `.csv` or `.xlsx` file
+2. The system runs three parallel analyses (duplicates, missing values, format errors)
+3. Review each detected issue with its confidence score
+4. Approve or reject individual suggestions
+5. Export a cleaned file containing only the approved fixes
 
-### 3. Test Akışı (Swagger üzerinden)
+## Next Steps
 
-1. `POST /api/datasets/upload` — bir CSV dosyası yükle (repo'da `sample-data/test_data.csv` var)
-2. `POST /api/datasets/{id}/analyze` — Python servisini tetikler, sorunları tespit eder
-3. `GET /api/datasets/{id}` — tespit edilen sorunları ve güven skorlarını gör
-4. `POST /api/datasets/issues/{issueId}/resolve` — öneriyi onayla/reddet
-
-## Sonraki Adımlar (henüz yapılmadı)
-
-- [ ] React frontend (dosya yükleme, önce/sonra karşılaştırma dashboard'u)
-- [ ] Hangfire ile asenkron analiz (büyük dosyalarda HTTP timeout riski var)
-- [ ] Export endpoint'i (onaylanan düzeltmelerle temiz dosya üretme)
-- [ ] Unit testler (xUnit — DatasetService ve ML modülleri için)
-- [ ] Docker Compose (backend + ml-service + SQL Server tek komutla ayağa kalksın)
-- [ ] Kullanıcının hangi kolonların "kimlik" kolonu olduğunu seçebilmesi (şu an otomatik tahmin ediliyor)
-
-## Neden Bu Mimari?
-
-- **Mikroservis ayrımı:** .NET ve Python birbirinden bağımsız deploy edilebilir, ML tarafı
-  ölçeklendirilmek istenirse (örn. GPU'lu sunucuya taşınmak istenirse) API'ye dokunmadan olur.
-- **Interface tabanlı tasarım:** `IMlAnalysisService` sayesinde Application katmanı Python'un
-  varlığından haberdar değil — ileride farklı bir ML çözümüne geçmek Infrastructure katmanıyla sınırlı kalır.
-- **Güven skoru:** Her öneri 0.0-1.0 arası bir skorla geliyor, kullanıcı körü körüne otomasyona
-  güvenmiyor, "insan onaylı AI" yaklaşımı benimsendi.
+- [ ] Docker Compose for one-command startup
+- [ ] Async processing (Hangfire) for large files
+- [ ] Let users choose which columns are "identifier" columns instead of auto-guessing
+- [ ] JWT authentication for multi-user support
