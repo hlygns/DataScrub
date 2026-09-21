@@ -13,7 +13,12 @@ namespace DataScrub.Application.Interfaces
         Task UpdateAsync(Dataset dataset);
         Task AddIssuesAsync(IEnumerable<DetectedIssue> issues);
         Task<DetectedIssue?> GetIssueByIdAsync(Guid issueId);
+        Task<List<DetectedIssue>> GetIssuesByIdsAsync(IEnumerable<Guid> issueIds);
         Task UpdateIssueAsync(DetectedIssue issue);
+        Task UpdateIssuesAsync(IEnumerable<DetectedIssue> issues);
         Task<List<DetectedIssue>> GetApprovedIssuesAsync(Guid datasetId);
+        Task<List<Dataset>> GetAllWithIssuesAsync();
+     
     }
+
 }

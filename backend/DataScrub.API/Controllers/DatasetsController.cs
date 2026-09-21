@@ -20,6 +20,14 @@ namespace DataScrub.API.Controllers
             _datasetService = datasetService;
             _env = env;
         }
+        // GET /api/datasets
+        [HttpGet]
+        public async Task<ActionResult<List<DatasetSummaryDto>>> GetAll()
+        {
+           var datasets = await _datasetService.GetAllDatasetsAsync();
+           return Ok(datasets);
+      }
+
 
         // POST /api/datasets/upload
         [HttpPost("upload")]
@@ -91,13 +99,19 @@ namespace DataScrub.API.Controllers
                 if (!System.IO.File.Exists(cleanedFilePath))
                     return NotFound("Temiz dosya bulunamadı.");
 
-                var fileName = Path.GetFileName(cleanedFilePath);
-                var contentType = fileName.EndsWith(".xlsx")
+                var extension = Path.GetExtension(cleanedFilePath);
+                var contentType = extension.Equals(".xlsx", StringComparison.OrdinalIgnoreCase)
                     ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     : "text/csv";
 
+                // Diskteki ad bir GUID; kullanıcıya orijinal dosya adının "_temiz" hâlini veriyoruz.
+                // Uzantıyı korumak önemli: .xlsx yüklenmişse .xlsx inmeli.
+                var summary = await _datasetService.GetDatasetSummaryAsync(id);
+                var originalName = Path.GetFileNameWithoutExtension(summary?.FileName ?? "veri");
+                var downloadName = $"{originalName}_temiz{extension}";
+
                 var fileBytes = await System.IO.File.ReadAllBytesAsync(cleanedFilePath);
-                return File(fileBytes, contentType, fileName);
+                return File(fileBytes, contentType, downloadName);
             }
             catch (InvalidOperationException ex)
             {
@@ -112,6 +126,19 @@ namespace DataScrub.API.Controllers
             var success = await _datasetService.ResolveIssueAsync(issueId, request.Approve);
             if (!success) return NotFound();
             return Ok(new { message = request.Approve ? "Öneri onaylandı." : "Öneri reddedildi." });
+        }
+
+        // POST /api/datasets/issues/resolve-bulk
+        // Frontend'deki "filtrelenenleri onayla" akışı için: N öneriyi tek istekte karara bağlar.
+        [HttpPost("issues/resolve-bulk")]
+        public async Task<ActionResult<ResolveIssuesBulkResponse>> ResolveIssuesBulk(
+            [FromBody] ResolveIssuesBulkRequest request)
+        {
+            if (request.IssueIds.Count == 0)
+                return BadRequest("En az bir öneri seçilmeli.");
+
+            var updated = await _datasetService.ResolveIssuesBulkAsync(request.IssueIds, request.Approve);
+            return Ok(new ResolveIssuesBulkResponse { UpdatedCount = updated });
         }
     }
 }

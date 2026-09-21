@@ -48,9 +48,27 @@ namespace DataScrub.Infrastructure.Data
         public async Task<DetectedIssue?> GetIssueByIdAsync(Guid issueId) =>
             await _context.DetectedIssues.FirstOrDefaultAsync(i => i.Id == issueId);
 
+        // Toplu onay için: N tane Id'yi tek sorguda çekiyoruz (Id başına ayrı sorgu = N+1).
+        public async Task<List<DetectedIssue>> GetIssuesByIdsAsync(IEnumerable<Guid> issueIds)
+        {
+            var ids = issueIds.ToList();
+            if (ids.Count == 0) return new List<DetectedIssue>();
+
+            return await _context.DetectedIssues
+                .Where(i => ids.Contains(i.Id))
+                .ToListAsync();
+        }
+
         public async Task UpdateIssueAsync(DetectedIssue issue)
         {
             _context.DetectedIssues.Update(issue);
+            await _context.SaveChangesAsync();
+        }
+
+        // Tek SaveChanges: ya hepsi yazılır ya hiçbiri. Kayıt başına round-trip yok.
+        public async Task UpdateIssuesAsync(IEnumerable<DetectedIssue> issues)
+        {
+            _context.DetectedIssues.UpdateRange(issues);
             await _context.SaveChangesAsync();
         }
 
@@ -58,5 +76,11 @@ namespace DataScrub.Infrastructure.Data
             await _context.DetectedIssues
                 .Where(i => i.DatasetId == datasetId && i.Resolution == ResolutionStatus.Approved)
                 .ToListAsync();
+        public async Task<List<Dataset>> GetAllWithIssuesAsync() =>
+            await _context.Datasets
+                .Include(d => d.Issues)
+                .OrderByDescending(d => d.UploadedAt)
+                .ToListAsync();
     }
+    
 }

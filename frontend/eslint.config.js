@@ -17,5 +17,14 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Bu kural, effect içinden veri çekmeyi (fetch -> setState) baştan yasaklıyor ve
+      // çözüm olarak bir data-fetching katmanı (React Query, Next.js) öneriyor.
+      // DataScrub'da bileşen başına tek bir REST çağrısı var; bunun için ekstra bir
+      // bağımlılık eklemek fazla. setState'ler zaten await sonrasında çalışıyor,
+      // yani kuralın uyardığı senkron cascading render durumu oluşmuyor.
+      // Not: bu kural satır içi eslint-disable ile susturulamıyor, o yüzden burada.
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

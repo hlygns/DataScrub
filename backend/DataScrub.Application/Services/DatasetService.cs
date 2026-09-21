@@ -82,6 +82,20 @@ namespace DataScrub.Application.Services
                 Issues = dataset.Issues.Select(MapIssue).ToList()
             };
         }
+        public async Task<List<DatasetSummaryDto>> GetAllDatasetsAsync() 
+        {
+            var datasets = await _repository.GetAllWithIssuesAsync();
+            return datasets.Select(d => new DatasetSummaryDto
+           {
+           Id = d.Id,
+           FileName = d.FileName,
+           Status = d.Status.ToString(),
+           RowCount = d.RowCount,
+           TotalIssues = d.Issues.Count,
+           PendingIssues = d.Issues.Count(i => i.Resolution == ResolutionStatus.Pending),
+           ResolvedIssues = d.Issues.Count(i => i.Resolution != ResolutionStatus.Pending)
+           }).ToList();
+        }
 
         public async Task<bool> ResolveIssueAsync(Guid issueId, bool approve)
         {
@@ -93,6 +107,27 @@ namespace DataScrub.Application.Services
 
             await _repository.UpdateIssueAsync(issue);
             return true;
+        }
+
+        // Toplu onay/ret. Var olmayan Id'ler sessizce atlanır - kullanıcı arayüzünde
+        // filtrelenmiş bir listeyi onaylarken araya silinmiş bir kayıt girerse
+        // tüm işlemin patlaması yerine geri kalanı uygulanır.
+        public async Task<int> ResolveIssuesBulkAsync(IEnumerable<Guid> issueIds, bool approve)
+        {
+            var issues = await _repository.GetIssuesByIdsAsync(issueIds);
+            if (issues.Count == 0) return 0;
+
+            var resolution = approve ? ResolutionStatus.Approved : ResolutionStatus.Rejected;
+            var now = DateTime.UtcNow;
+
+            foreach (var issue in issues)
+            {
+                issue.Resolution = resolution;
+                issue.ResolvedAt = now;
+            }
+
+            await _repository.UpdateIssuesAsync(issues);
+            return issues.Count;
         }
 
         // Kullanıcının onayladığı düzeltmeleri gerçek veriye uygulayıp temiz dosyanın yolunu döner.

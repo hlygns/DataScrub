@@ -29,6 +29,19 @@ namespace DataScrub.Application.DTOs
         public bool Approve { get; set; }
     }
 
+    // Yüzlerce öneriyi tek tek onaylamak yerine toplu karar vermek için.
+    // Frontend'deki "filtrelenenleri onayla" / "güveni yüksek olanları onayla" akışı bunu kullanır.
+    public class ResolveIssuesBulkRequest
+    {
+        public List<Guid> IssueIds { get; set; } = new();
+        public bool Approve { get; set; }
+    }
+
+    public class ResolveIssuesBulkResponse
+    {
+        public int UpdatedCount { get; set; }
+    }
+
     public class DatasetSummaryDto
     {
         public Guid Id { get; set; }
