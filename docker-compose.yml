@@ -1,0 +1,58 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "DataScrub_2026!"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"DataScrub_2026!\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  ml-service:
+    build: ./ml-service
+    ports:
+      - "8000:8000"
+    volumes:
+      # Backend dosyayı yazıp ML servise MUTLAK YOLUNU gönderiyor (/app/Uploads/...).
+      # İki container aynı yolda aynı volume'u görmezse ML "dosya bulunamadı" der,
+      # temizlenmiş dosyayı da backend okuyamaz.
+      - uploads:/app/Uploads
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=DataScrubDb;User Id=sa;Password=DataScrub_2026!;TrustServerCertificate=True"
+      MlService__BaseUrl: "http://ml-service:8000"
+    volumes:
+      - uploads:/app/Uploads
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      ml-service:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Vite bu değeri build sırasında koda gömer. Çağrıyı container değil
+        # tarayıcı yaptığı için "backend" değil, host'tan görünen adres olmalı.
+        VITE_API_URL: "http://localhost:5000/api"
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  uploads:
+  sqldata:

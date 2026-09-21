@@ -42,6 +42,29 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Şemayı açılışta kendisi kursun: Docker'da elle `dotnet ef database update` çalıştırılamaz.
+// SQL Server container'ı healthy olsa bile ilk bağlantılar geç kalabildiği için birkaç kez deniyoruz.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    for (var attempt = 1; ; attempt++)
+    {
+        try
+        {
+            db.Database.Migrate();
+            logger.LogInformation("Veritabanı migration'ları uygulandı.");
+            break;
+        }
+        catch (Exception ex) when (attempt < 10)
+        {
+            logger.LogWarning(ex, "Migration denemesi {Attempt}/10 başarısız, 3 sn sonra tekrar denenecek.", attempt);
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+        }
+    }
+}
+
 // --- Middleware pipeline ---
 
 if (app.Environment.IsDevelopment())
@@ -50,7 +73,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Container içinde sadece HTTP:8080 dinleniyor; HTTPS yönlendirmesi CORS preflight'ı bozar.
+// Resmi .NET imajları DOTNET_RUNNING_IN_CONTAINER=true set eder.
+if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
