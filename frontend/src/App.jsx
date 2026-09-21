@@ -40,11 +40,31 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>DataScrub</h1>
-        <p>
-          Otonom veri temizleme — mükerrer kayıt, eksik veri ve format hatalarını tespit eder,
-          <strong> ama sen onaylamadan hiçbir şeyi değiştirmez.</strong>
+        <div className="brand">
+          <div className="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor"
+                 strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 6h10M4 12h6M4 18h10" />
+              <path d="M14.5 15.5l3 3 5-6" />
+            </svg>
+          </div>
+          <div>
+            <h1>Data<span className="accent">Scrub</span></h1>
+            <p className="brand-sub">Otonom veri temizleme</p>
+          </div>
+        </div>
+
+        <p className="tagline">
+          Yüklediğin dosyadaki veri kalitesi sorunlarını tespit eder ve düzeltme önerir.{" "}
+          <strong>Sen onaylamadan hiçbir şeyi değiştirmez.</strong>
         </p>
+
+        <ul className="feature-chips">
+          <li><span className="dot dot-duplicate" />Mükerrer kayıt</li>
+          <li><span className="dot dot-missing" />Eksik veri</li>
+          <li><span className="dot dot-format" />Format hatası</li>
+          <li><span className="dot dot-approved" />İnsan onaylı</li>
+        </ul>
       </header>
 
       <div className="app-layout">

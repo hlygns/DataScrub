@@ -76,17 +76,94 @@ p {
 }
 
 .app-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
 }
 
-.app-header p {
-  max-width: 62ch;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-mark {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
+}
+
+.app-header h1 {
   margin: 0;
+  line-height: 1.1;
 }
 
-.app-header strong {
+.app-header .accent {
+  color: var(--primary);
+}
+
+.brand-sub {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.tagline {
+  max-width: 64ch;
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+}
+
+.tagline strong {
   color: var(--text);
 }
+
+.feature-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feature-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Noktalar tablodaki rozetlerle aynı renkte: etiket ile tablo arasında görsel bağ kuruyor */
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.dot-duplicate { background: #ea580c; }
+.dot-missing { background: #2563eb; }
+.dot-format { background: #7c3aed; }
+.dot-approved { background: #16a34a; }
 
 /* Geçmiş solda sabit genişlikte, içerik kalan alanı kaplar.
    Dar ekranda tek kolona düşer (aşağıdaki media query). */
