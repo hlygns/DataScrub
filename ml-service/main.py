@@ -76,6 +76,19 @@ def health_check():
     return {"status": "ok"}
 
 
+class InspectResponse(BaseModel):
+    row_count: int
+    column_count: int
+
+
+@app.post("/inspect", response_model=InspectResponse)
+def inspect_endpoint(request: AnalysisRequest):
+    # Yükleme anında satır/kolon sayısını .NET tarafı hesaplamıyor (xlsx okumak için
+    # kütüphane gerekir); dosyayı zaten okuyabilen bu servise soruyoruz.
+    df = _load_dataframe(request.file_path)
+    return InspectResponse(row_count=len(df), column_count=len(df.columns))
+
+
 @app.post("/detect-duplicates", response_model=AnalysisResponse)
 def detect_duplicates_endpoint(request: AnalysisRequest):
     df = _load_dataframe(request.file_path)

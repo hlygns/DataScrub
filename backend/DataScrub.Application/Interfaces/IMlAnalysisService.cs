@@ -8,6 +8,9 @@ namespace DataScrub.Application.Interfaces
     // Application katmanı Python'un FastAPI mi Flask mi olduğunu bilmez, sadece bu sözleşmeyi bilir.
     public interface IMlAnalysisService
     {
+        // Dosyanın veri satırı ve kolon sayısı (başlık hariç).
+        Task<(int Rows, int Columns)> InspectAsync(string filePath);
+
         Task<List<DetectedIssue>> DetectDuplicatesAsync(Guid datasetId, string filePath);
         Task<List<DetectedIssue>> DetectMissingValuesAsync(Guid datasetId, string filePath);
         Task<List<DetectedIssue>> DetectFormatErrorsAsync(Guid datasetId, string filePath);

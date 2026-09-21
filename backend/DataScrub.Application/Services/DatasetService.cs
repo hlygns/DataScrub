@@ -42,6 +42,11 @@ namespace DataScrub.Application.Services
             var dataset = await _repository.GetByIdAsync(datasetId)
                 ?? throw new InvalidOperationException($"Dataset bulunamadı: {datasetId}");
 
+            // Yükleme sırasında bilinmeyen satır/kolon sayısını burada dolduruyoruz.
+            var (rows, columns) = await _mlService.InspectAsync(dataset.OriginalFilePath);
+            dataset.RowCount = rows;
+            dataset.ColumnCount = columns;
+
             dataset.Status = DatasetStatus.Processing;
             await _repository.UpdateAsync(dataset);
 

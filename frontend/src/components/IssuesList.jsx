@@ -20,10 +20,15 @@ const STATUS_LABELS = {
 // Güven skoruna göre renk: yüksekse yeşil, ortaysa sarı, düşükse kırmızı.
 // Kullanıcının "hangisine güvenebilirim" sorusunu tabloya bakar bakmaz yanıtlıyor.
 const confidenceColor = (score) => {
-  if (score >= 0.8) return "#4ade80";
-  if (score >= 0.6) return "#fbbf24";
-  return "#f87171";
+  if (score >= 0.8) return "var(--conf-high)";
+  if (score >= 0.6) return "var(--conf-mid)";
+  return "var(--conf-low)";
 };
+
+// Backend satırları 0'dan başlatıyor (veri çerçevesi indeksi). Kullanıcı ise dosyayı
+// Excel'de açıyor: başlık 1. satır, ilk veri satırı 2. satır. Ekranda Excel numarasını
+// gösteriyoruz ki "Satır 5" dediğimizde kullanıcı aynı satırı bulsun.
+const displayRow = (rowIndex) => rowIndex + 2;
 
 function IssuesList({ datasetId, onSummaryChange, onResolved }) {
   const [summary, setSummary] = useState(null);
@@ -205,13 +210,13 @@ function IssuesList({ datasetId, onSummaryChange, onResolved }) {
               <thead>
                 <tr>
                   <th>Tip</th>
-                  <th>Satır</th>
+                  <th title="Dosyada Excel/CSV'de göründüğü satır numarası (başlık satırı = 1)">Satır</th>
                   <th>Kolon</th>
                   <th>Orijinal</th>
                   <th>Önerilen</th>
                   <th>Güven</th>
                   <th>Durum</th>
-                  <th>Aksiyon</th>
+                  <th className="col-actions">Aksiyon</th>
                 </tr>
               </thead>
               <tbody>
@@ -223,8 +228,8 @@ function IssuesList({ datasetId, onSummaryChange, onResolved }) {
                       </span>
                     </td>
                     <td>
-                      {issue.rowIndex}
-                      {issue.relatedRowIndex != null && ` ↔ ${issue.relatedRowIndex}`}
+                      {displayRow(issue.rowIndex)}
+                      {issue.relatedRowIndex != null && ` ↔ ${displayRow(issue.relatedRowIndex)}`}
                     </td>
                     <td className="cell-muted">{issue.columnName}</td>
                     <td className="cell-value" title={issue.originalValue ?? ""}>
@@ -252,7 +257,7 @@ function IssuesList({ datasetId, onSummaryChange, onResolved }) {
                         {STATUS_LABELS[issue.resolution] ?? issue.resolution}
                       </span>
                     </td>
-                    <td>
+                    <td className="col-actions">
                       {issue.resolution === "Pending" && (
                         <div className="row-actions">
                           <button onClick={() => handleResolve(issue.id, true)} disabled={busy}>

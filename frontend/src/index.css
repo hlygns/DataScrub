@@ -1,20 +1,54 @@
+/* Tüm renkler burada değişken olarak tanımlı: temayı değiştirmek için sadece bu blok
+   düzenlenir. Açık tema seçildi çünkü koyu lacivert/mor zemin uzun süre bakınca göz yoruyordu. */
+:root {
+  --bg: #f5f3ee;            /* hafif sıcak kırık beyaz - saf beyazdan daha az parlak */
+  --surface: #ffffff;
+  --surface-soft: #faf9f6;
+  --border: #dcd8ce;
+  --text: #1f2937;
+  --text-muted: #4b5563;
+  --text-faint: #6b7280;
+  --heading: #1e3a8a;
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --danger: #b91c1c;
+  --danger-soft: #fef2f2;
+  --danger-border: #fecaca;
+  --success: #15803d;
+
+  --th-bg: #eceae3;
+  --row-hover: rgba(37, 99, 235, 0.06);
+  --row-hover-solid: #f3f7ff;
+
+  --conf-high: #16a34a;
+  --conf-mid: #d97706;
+  --conf-low: #dc2626;
+  --conf-track: #e5e7eb;
+}
+
 * {
   box-sizing: border-box;
+}
+
+/* Tüm boyutlar rem cinsinden; kökü büyütmek her şeyi orantılı büyütür. */
+html {
+  font-size: 18px;
 }
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%);
-  background-attachment: fixed;
-  color: #e2e8f0;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
+  line-height: 1.5;
 }
 
 h1 {
-  font-size: 1.85rem;
+  font-size: 2rem;
   font-weight: 800;
-  color: #f8fafc;
+  color: var(--text);
   letter-spacing: -0.02em;
   margin: 0 0 8px 0;
 }
@@ -22,21 +56,21 @@ h1 {
 h2 {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #93c5fd;
+  color: var(--heading);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0 0 16px 0;
 }
 
 p {
-  color: #94a3b8;
-  line-height: 1.5;
+  color: var(--text-muted);
+  line-height: 1.55;
 }
 
 /* ---------- Sayfa iskeleti ---------- */
 
 .app {
-  max-width: 1200px;
+  max-width: 1360px;
   margin: 0 auto;
   padding: 40px 24px 64px;
 }
@@ -51,14 +85,14 @@ p {
 }
 
 .app-header strong {
-  color: #cbd5e1;
+  color: var(--text);
 }
 
 /* Geçmiş solda sabit genişlikte, içerik kalan alanı kaplar.
    Dar ekranda tek kolona düşer (aşağıdaki media query). */
 .app-layout {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 280px minmax(0, 1fr);
   gap: 20px;
   align-items: start;
 }
@@ -68,29 +102,31 @@ p {
 }
 
 .section {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid #334155;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 /* ---------- Butonlar ve form ---------- */
 
 button {
-  background: #3b82f6;
-  color: white;
-  border: none;
+  background: var(--primary);
+  color: #fff;
+  border: 1px solid transparent;
   padding: 10px 20px;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.15s ease;
 }
 
 button:hover:not(:disabled) {
-  background: #2563eb;
+  background: var(--primary-hover);
   transform: translateY(-1px);
 }
 
@@ -98,27 +134,35 @@ button:active:not(:disabled) {
   transform: translateY(0);
 }
 
+button:focus-visible,
+select:focus-visible,
+input:focus-visible + span,
+.file-input:focus-within {
+  outline: 3px solid rgba(37, 99, 235, 0.4);
+  outline-offset: 2px;
+}
+
 button:disabled {
-  background: #475569;
+  background: #d1d5db;
+  color: #6b7280;
   cursor: not-allowed;
-  opacity: 0.6;
   transform: none;
 }
 
 button.secondary {
   background: transparent;
-  border: 1px solid #ef4444;
-  color: #fca5a5;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 button.secondary:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--danger-soft);
 }
 
 button.secondary:disabled {
   background: transparent;
-  border-color: #475569;
-  color: #64748b;
+  border-color: #d1d5db;
+  color: #9ca3af;
 }
 
 .upload-row {
@@ -135,18 +179,18 @@ button.secondary:disabled {
   display: flex;
   align-items: center;
   min-width: 0;
-  padding: 10px 16px;
-  background: #0f172a;
-  border: 1px dashed #475569;
+  padding: 11px 16px;
+  background: var(--surface-soft);
+  border: 2px dashed var(--border);
   border-radius: 8px;
   cursor: pointer;
-  color: #cbd5e1;
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
   transition: border-color 0.15s ease;
 }
 
 .file-input:hover {
-  border-color: #3b82f6;
+  border-color: var(--primary);
 }
 
 .file-input input[type="file"] {
@@ -171,8 +215,8 @@ button.secondary:disabled {
   flex-wrap: wrap;
   align-items: center;
   padding: 14px 16px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid #334155;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
   border-radius: 10px;
   margin-bottom: 14px;
 }
@@ -181,34 +225,35 @@ button.secondary:disabled {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #94a3b8;
-  font-weight: 600;
+  color: var(--text-muted);
+  font-weight: 700;
 }
 
 .filter-bar select {
-  background: #1e293b;
-  color: #e2e8f0;
-  border: 1px solid #475569;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid #b8b3a6;
   border-radius: 6px;
   padding: 6px 10px;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  font-family: inherit;
   text-transform: none;
   letter-spacing: 0;
   cursor: pointer;
 }
 
 .range-label strong {
-  color: #f8fafc;
-  min-width: 42px;
+  color: var(--text);
+  min-width: 46px;
   display: inline-block;
 }
 
 .range-label input[type="range"] {
-  accent-color: #3b82f6;
-  width: 120px;
+  accent-color: var(--primary);
+  width: 130px;
   cursor: pointer;
 }
 
@@ -224,8 +269,8 @@ button.secondary:disabled {
 }
 
 .bulk-info {
-  font-size: 0.85rem;
-  color: #94a3b8;
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
 .bulk-actions {
@@ -235,8 +280,8 @@ button.secondary:disabled {
 }
 
 .bulk-actions button {
-  padding: 8px 14px;
-  font-size: 0.82rem;
+  padding: 9px 16px;
+  font-size: 0.9rem;
 }
 
 /* ---------- Tablo ---------- */
@@ -244,25 +289,24 @@ button.secondary:disabled {
 /* Dar ekranda tabloyu kırpmak yerine yatay kaydırmaya bırakıyoruz */
 .table-wrap {
   overflow-x: auto;
+  border: 1px solid var(--border);
   border-radius: 10px;
 }
 
 table {
   width: 100%;
-  font-size: 0.85rem;
-  background: #1e293b;
-  border-radius: 10px;
-  overflow: hidden;
+  font-size: 0.95rem;
+  background: var(--surface);
   border-collapse: collapse;
 }
 
 th {
-  background: #334155;
+  background: var(--th-bg);
   text-align: left;
   padding: 12px;
-  font-weight: 600;
-  color: #cbd5e1;
-  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
@@ -270,25 +314,41 @@ th {
 
 td {
   padding: 12px;
-  border-top: 1px solid #334155;
-  color: #e2e8f0;
+  border-top: 1px solid var(--border);
+  color: var(--text);
   vertical-align: middle;
 }
 
 tr:hover td {
-  background: rgba(59, 130, 246, 0.05);
+  background: var(--row-hover);
+}
+
+/* Onayla/Reddet sütunu sağa sabit: tablo yana taşsa bile butonlar her zaman görünür. */
+.col-actions {
+  position: sticky;
+  right: 0;
+  background: var(--surface);
+  box-shadow: -8px 0 8px -8px rgba(0, 0, 0, 0.18);
+}
+
+th.col-actions {
+  background: var(--th-bg);
+}
+
+tr:hover td.col-actions {
+  background: var(--row-hover-solid);
 }
 
 /* Uzun hücre değerleri tabloyu genişletmesin; tamamı title ile tooltip'te */
 .cell-value {
-  max-width: 220px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .cell-muted {
-  color: #94a3b8;
+  color: var(--text-faint);
 }
 
 .row-actions {
@@ -297,8 +357,8 @@ tr:hover td {
 }
 
 .row-actions button {
-  padding: 5px 12px;
-  font-size: 0.78rem;
+  padding: 6px 12px;
+  font-size: 0.85rem;
 }
 
 /* ---------- Rozetler ---------- */
@@ -307,20 +367,20 @@ tr:hover td {
   display: inline-block;
   padding: 3px 10px;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   white-space: nowrap;
 }
 
-.badge-duplicate { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
-.badge-missingvalue { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
-.badge-formaterror { background: rgba(167, 139, 250, 0.15); color: #a78bfa; }
+.badge-duplicate { background: #ffedd5; color: #9a3412; }
+.badge-missingvalue { background: #dbeafe; color: #1e40af; }
+.badge-formaterror { background: #ede9fe; color: #5b21b6; }
 
-.status-pending { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
-.status-approved { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
-.status-rejected { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+.status-pending { background: #e5e7eb; color: #374151; }
+.status-approved { background: #dcfce7; color: #166534; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
 
 /* ---------- Güven skoru çubuğu ---------- */
 
@@ -328,12 +388,13 @@ tr:hover td {
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .confidence-bar {
   width: 60px;
-  height: 6px;
-  background: #334155;
+  height: 7px;
+  background: var(--conf-track);
   border-radius: 999px;
   overflow: hidden;
   flex-shrink: 0;
@@ -354,12 +415,12 @@ tr:hover td {
 }
 
 .stat-pill {
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
   border-radius: 999px;
   padding: 6px 16px;
-  font-size: 0.8rem;
-  color: #94a3b8;
+  font-size: 0.9rem;
+  color: var(--text-muted);
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -367,7 +428,7 @@ tr:hover td {
 }
 
 .stat-pill strong {
-  color: #f8fafc;
+  color: var(--text);
 }
 
 /* ---------- Geçmiş listesi ---------- */
@@ -401,22 +462,22 @@ tr:hover td {
   padding: 10px 12px;
   text-align: left;
   font-weight: 500;
-  color: #cbd5e1;
+  color: var(--text);
 }
 
 .history-item:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.08);
+  background: var(--row-hover);
   transform: none;
 }
 
 .history-item.is-active {
-  background: rgba(59, 130, 246, 0.14);
-  border-color: #3b82f6;
-  color: #f8fafc;
+  background: #eaf1ff;
+  border-color: var(--primary);
 }
 
 .history-name {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -427,7 +488,7 @@ tr:hover td {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
 }
 
 /* ---------- Sayfalama ---------- */
@@ -438,13 +499,13 @@ tr:hover td {
   justify-content: center;
   gap: 16px;
   margin-top: 16px;
-  font-size: 0.85rem;
-  color: #94a3b8;
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
 .pagination button {
-  padding: 6px 14px;
-  font-size: 0.8rem;
+  padding: 7px 16px;
+  font-size: 0.9rem;
 }
 
 /* ---------- Durum metinleri ---------- */
@@ -452,39 +513,41 @@ tr:hover td {
 .empty-state {
   text-align: center;
   padding: 24px 12px;
-  color: #64748b;
-  font-size: 0.9rem;
+  color: var(--text-faint);
+  font-size: 1rem;
   margin: 0;
 }
 
 .error-text {
-  color: #fca5a5;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
   border-radius: 8px;
   padding: 10px 14px;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   margin: 12px 0 0;
 }
 
 .success-text {
-  color: #4ade80;
-  font-size: 0.85rem;
+  color: var(--success);
+  font-size: 0.95rem;
+  font-weight: 600;
   margin: 12px 0 0;
 }
 
 .hint {
-  font-size: 0.82rem;
-  color: #64748b;
+  font-size: 0.9rem;
+  color: var(--text-faint);
   margin: 12px 0 0;
 }
 
+/* currentColor: hem mavi butonun içinde (beyaz) hem açık zeminde (koyu) görünür */
 .spinner {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   margin-right: 8px;
@@ -514,9 +577,9 @@ tr:hover td {
 }
 
 @media (max-width: 640px) {
+  html { font-size: 16px; }
   .app { padding: 24px 16px 48px; }
   .section { padding: 18px; }
-  table { font-size: 0.75rem; }
   th, td { padding: 8px; }
   .cell-value { max-width: 140px; }
   .bulk-bar { flex-direction: column; align-items: stretch; }

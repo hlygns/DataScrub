@@ -22,6 +22,16 @@ namespace DataScrub.Infrastructure.Services
             _httpClient = httpClient; // BaseAddress Program.cs'de appsettings'den set edilecek
         }
 
+        public async Task<(int Rows, int Columns)> InspectAsync(string filePath)
+        {
+            var response = await _httpClient.PostAsJsonAsync("/inspect",
+                new { dataset_id = string.Empty, file_path = filePath });
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<MlInspectResponse>();
+            return (result?.RowCount ?? 0, result?.ColumnCount ?? 0);
+        }
+
         public async Task<List<DetectedIssue>> DetectDuplicatesAsync(Guid datasetId, string filePath)
         {
             var response = await _httpClient.PostAsJsonAsync("/detect-duplicates",
@@ -69,6 +79,15 @@ namespace DataScrub.Infrastructure.Services
 
             var result = await response.Content.ReadFromJsonAsync<ApplyCleaningResponse>();
             return result?.CleanedFilePath ?? throw new InvalidOperationException("ML servisi temiz dosya yolu döndürmedi.");
+        }
+
+        private class MlInspectResponse
+        {
+            [JsonPropertyName("row_count")]
+            public int RowCount { get; set; }
+
+            [JsonPropertyName("column_count")]
+            public int ColumnCount { get; set; }
         }
 
         private class ApplyCleaningResponse
