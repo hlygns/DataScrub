@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore backend/DataScrub.sln
+      - name: Build
+        run: dotnet build backend/DataScrub.sln --no-restore -c Release
+      - name: Test
+        run: dotnet test backend/DataScrub.sln --no-build -c Release
+
+  ml-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r ml-service/requirements.txt
+      - name: Check syntax
+        run: python -m py_compile ml-service/*.py
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install
+        run: npm ci
+        working-directory: frontend
+      - name: Build
+        run: npm run build
+        working-directory: frontend
+        
